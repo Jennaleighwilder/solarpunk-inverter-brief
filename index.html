@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0c">
+<title>Solarpunk Solutions · GSL Inverter Field Brief</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,300..600&family=Source+Sans+3:wght@300..700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+SC:wght@300..500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#0a0a0c;
+    --bg-2:#13131a;
+    --panel:#16161d;
+    --panel-2:#1c1c25;
+    --bone:#ece8dd;
+    --bone-2:#bdb8a8;
+    --muted:#8f8a7e;
+    --faint:#5a574d;
+    --line:rgba(236,232,221,.08);
+    --line-2:rgba(236,232,221,.16);
+
+    /* the signature alert */
+    --alarm:#ff3838;
+    --alarm-2:#c84a3e;
+    --alarm-glow:rgba(255,56,56,.35);
+    --caution:#d6a248;
+    --safe:#7aa08e;
+    --brass:#b89968;
+    --brass-2:#d4b989;
+
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --sans:'Source Sans 3','Noto Sans SC',system-ui,sans-serif;
+    --display:'Source Serif 4','Noto Serif SC',Georgia,serif;
+    --cn:'Noto Serif SC',serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--sans);background:var(--bg);color:var(--bone);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative;min-height:100vh;overscroll-behavior-y:none;font-weight:300}
+
+  /* ambient — subtle forensic scanline + corner glow */
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(1400px 900px at 85% -10%,rgba(200,74,62,.06),transparent 60%),
+      radial-gradient(1100px 700px at 0% 110%,rgba(184,153,104,.05),transparent 60%),
+      repeating-linear-gradient(0deg,rgba(236,232,221,.012) 0,rgba(236,232,221,.012) 1px,transparent 1px,transparent 3px)}
+  body::after{content:"";position:fixed;left:0;right:0;top:0;height:1px;z-index:50;pointer-events:none;
+    background:linear-gradient(90deg,transparent 0,var(--alarm) 25%,var(--brass) 75%,transparent 100%);opacity:.4}
+
+  .wrap{position:relative;z-index:2;max-width:1280px;margin:0 auto;padding:0 28px}
+
+  /* ============== HEADER ============== */
+  header.top{display:flex;align-items:center;justify-content:space-between;padding:24px 28px;margin-top:24px;border:1px solid var(--line);background:rgba(22,22,29,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .mark{display:flex;align-items:center;gap:14px}
+  .mark-stamp{width:36px;height:36px;flex:none;border:1.5px solid var(--alarm);display:flex;align-items:center;justify-content:center;transform:rotate(-3deg);background:rgba(255,56,56,.04)}
+  .mark-stamp span{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--alarm);letter-spacing:.06em;line-height:1}
+  .mark-text{display:flex;flex-direction:column;gap:2px}
+  .mark-text .ent{font-family:var(--display);font-weight:500;font-size:14px;letter-spacing:.18em;color:var(--bone)}
+  .mark-text .sub{font-family:var(--mono);font-size:10px;letter-spacing:.28em;color:var(--faint);text-transform:uppercase}
+  .doc-id{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);text-align:right;line-height:1.6}
+  .doc-id b{color:var(--bone);font-weight:500}
+  .doc-id .alarm{color:var(--alarm);font-weight:600;letter-spacing:.22em}
+
+  /* ============== HERO ============== */
+  .hero{padding:72px 64px 56px;margin:36px 0 0;background:rgba(22,22,29,.94);border:1px solid var(--line);position:relative;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .hero::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--alarm) 0,var(--alarm-2) 50%,var(--brass) 100%);opacity:.6}
+  .eyebrow{display:inline-flex;align-items:center;gap:14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.36em;text-transform:uppercase;color:var(--alarm);margin-bottom:32px;padding:9px 18px;border:1px solid rgba(255,56,56,.3);background:rgba(255,56,56,.05);font-weight:500}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--alarm);box-shadow:0 0 10px var(--alarm),0 0 24px rgba(255,56,56,.5);animation:emit 2s ease-in-out infinite}
+  @keyframes emit{0%,100%{opacity:1}50%{opacity:.4}}
+  .eyebrow .sep{color:var(--faint);font-weight:300}
+
+  h1{font-family:var(--display);font-weight:400;letter-spacing:-.022em;font-size:clamp(40px,6.6vw,82px);line-height:1.02;color:var(--bone);max-width:18ch}
+  h1 .em{font-style:italic;font-weight:400;color:var(--alarm);letter-spacing:-.018em;display:inline-block;text-shadow:0 0 36px rgba(255,56,56,.25)}
+  h1 .cn-sub{display:block;margin-top:24px;font-family:var(--cn);font-weight:300;font-size:clamp(15px,1.4vw,20px);letter-spacing:.32em;color:var(--brass);opacity:.65}
+  .lede{margin:36px 0 0;color:var(--bone-2);font-size:17px;max-width:62ch;font-weight:300;line-height:1.7}
+  .lede b{color:var(--brass-2);font-weight:500}
+  .lede em{font-style:normal;color:var(--alarm-2);font-weight:500}
+
+  .tldr{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:48px}
+  .tldr-cell{padding:24px;border:1px solid var(--line);background:rgba(10,10,12,.6)}
+  .tldr-cell .n{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--alarm);font-weight:600;margin-bottom:14px}
+  .tldr-cell .h{font-family:var(--display);font-weight:400;font-size:19px;letter-spacing:-.01em;color:var(--bone);margin-bottom:10px;line-height:1.25}
+  .tldr-cell .d{font-size:13px;color:var(--muted);line-height:1.6}
+  .tldr-cell .d b{color:var(--bone-2);font-weight:500}
+
+  /* ============== SECTION CHROME ============== */
+  section{margin-top:56px}
+  .sect-head{display:flex;align-items:baseline;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:28px;padding-bottom:18px;border-bottom:1px solid var(--line)}
+  .sect-head h2{font-family:var(--display);font-weight:400;font-size:clamp(28px,3.6vw,42px);letter-spacing:-.02em;color:var(--bone)}
+  .sect-head .num{font-family:var(--mono);font-size:11px;letter-spacing:.32em;color:var(--brass);font-weight:500;text-transform:uppercase}
+  .sect-head .num b{color:var(--bone)}
+  .sect-intro{font-size:15.5px;color:var(--bone-2);max-width:64ch;line-height:1.7;margin-bottom:32px;font-weight:300}
+  .sect-intro b{color:var(--bone);font-weight:500}
+
+  /* ============== REBRAND MAP (signature visual) ============== */
+  .map-card{background:rgba(22,22,29,.94);border:1px solid var(--line);padding:36px;position:relative;overflow:hidden;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .map-card::before{content:"FORENSIC · 法证";position:absolute;top:18px;right:24px;font-family:var(--mono);font-size:9.5px;letter-spacing:.32em;color:var(--faint);text-transform:uppercase}
+  svg.rebrand-map{width:100%;height:auto;max-height:680px;display:block}
+  .map-legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:24px;padding-top:24px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+  .map-legend span{display:inline-flex;align-items:center;gap:10px}
+  .map-legend i{display:inline-block;width:12px;height:12px;border-radius:2px}
+
+  /* ============== TIMELINE ============== */
+  .timeline{background:rgba(22,22,29,.94);border:1px solid var(--line);padding:36px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);position:relative}
+  .timeline::before{content:"";position:absolute;left:36px;right:36px;top:50%;height:1px;background:linear-gradient(90deg,var(--brass) 0,var(--brass) 40%,var(--alarm) 65%,var(--alarm) 78%,var(--bone-2) 100%);opacity:.6;z-index:1}
+  .events{display:grid;grid-template-columns:repeat(5,1fr);gap:24px;position:relative;z-index:2}
+  .ev{padding:18px 16px;background:rgba(10,10,12,.85);border:1px solid var(--line)}
+  .ev.fire{border-color:var(--alarm);background:rgba(200,74,62,.08);box-shadow:0 0 32px -8px var(--alarm-glow)}
+  .ev .when{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--brass);font-weight:600;margin-bottom:10px;text-transform:uppercase}
+  .ev.fire .when{color:var(--alarm)}
+  .ev .what{font-family:var(--display);font-size:15px;font-weight:400;color:var(--bone);line-height:1.35;margin-bottom:8px}
+  .ev .detail{font-size:12.5px;color:var(--muted);line-height:1.55}
+
+  /* ============== GRADE TABLE ============== */
+  .grid-table{background:rgba(22,22,29,.94);border:1px solid var(--line);overflow:hidden;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .gt-row{display:grid;grid-template-columns:2.2fr 1.4fr 0.7fr 2fr;gap:0;border-bottom:1px solid var(--line);transition:background .15s}
+  .gt-row:last-child{border-bottom:0}
+  .gt-row:hover{background:rgba(255,255,255,.015)}
+  .gt-row.head{background:rgba(10,10,12,.6);border-bottom:1px solid var(--line-2)}
+  .gt-row > div{padding:16px 20px;display:flex;align-items:center;border-right:1px solid var(--line)}
+  .gt-row > div:last-child{border-right:0}
+  .gt-row.head > div{font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);font-weight:500;padding-top:14px;padding-bottom:14px}
+  .gt-sku{font-family:var(--mono);font-size:12.5px;color:var(--bone);font-weight:500;letter-spacing:.02em}
+  .gt-oem{font-family:var(--display);font-size:14px;font-weight:400;color:var(--bone-2)}
+  .gt-oem.deye{color:var(--alarm-2)}
+  .gt-oem.lux{color:var(--safe)}
+  .gt-oem.megarevo{color:var(--caution)}
+  .gt-oem.unknown{color:var(--muted);font-style:italic}
+  .gt-grade{font-family:var(--display);font-size:28px;font-weight:400;letter-spacing:-.02em;justify-content:center}
+  .gt-grade.A{color:var(--safe)}
+  .gt-grade.B{color:var(--safe);opacity:.85}
+  .gt-grade.C{color:var(--caution)}
+  .gt-grade.D{color:var(--alarm-2)}
+  .gt-grade.F{color:var(--alarm)}
+  .gt-grade.I{color:var(--muted);font-size:22px;letter-spacing:.16em}
+  .gt-reason{font-size:13px;color:var(--muted);line-height:1.5}
+  .gt-reason b{color:var(--bone-2);font-weight:500}
+
+  /* ============== HS-LV12KNA spotlight ============== */
+  .spotlight{display:grid;grid-template-columns:1fr 1.2fr;gap:24px;margin-top:8px}
+  .spot-card{padding:36px;background:rgba(22,22,29,.94);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .spot-card.warn{border-color:rgba(200,74,62,.5);background:linear-gradient(160deg,rgba(200,74,62,.06),rgba(22,22,29,.94) 50%)}
+  .spot-card .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--alarm);font-weight:600;margin-bottom:18px}
+  .spot-card .sku{font-family:var(--display);font-size:42px;font-weight:400;letter-spacing:-.01em;color:var(--bone);margin-bottom:8px;line-height:1}
+  .spot-card .askedby{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--brass);text-transform:uppercase;margin-bottom:22px}
+  .spot-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px}
+  .spot-stat{padding:14px 16px;background:rgba(10,10,12,.5);border:1px solid var(--line)}
+  .spot-stat .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--faint);text-transform:uppercase;margin-bottom:6px}
+  .spot-stat .v{font-family:var(--display);font-size:18px;color:var(--bone);font-weight:400}
+  .spot-card .verdict{margin-top:24px;padding:18px 20px;border-left:3px solid var(--alarm);background:rgba(200,74,62,.05)}
+  .spot-card .verdict b{color:var(--alarm);font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;font-weight:600;display:block;margin-bottom:8px}
+  .spot-card .verdict p{font-size:14px;color:var(--bone-2);line-height:1.6}
+  .spot-manual{padding:20px 22px;border:1px dashed var(--brass);background:rgba(184,153,104,.04);margin-top:18px}
+  .spot-manual .ml{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--brass);text-transform:uppercase;margin-bottom:8px}
+  .spot-manual .mt{font-family:var(--display);font-size:15px;color:var(--bone);margin-bottom:10px}
+  .spot-manual a{color:var(--brass-2);text-decoration:none;font-family:var(--mono);font-size:12px;word-break:break-all;border-bottom:1px solid var(--line-2);padding-bottom:1px}
+  .spot-manual a:hover{color:var(--bone);border-color:var(--brass-2)}
+
+  /* ============== ALTERNATIVES ============== */
+  .alts{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .alt{padding:24px;background:rgba(22,22,29,.94);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .alt .tier{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--brass);margin-bottom:10px;font-weight:600}
+  .alt .what{font-family:var(--display);font-size:21px;font-weight:400;color:var(--safe);line-height:1.2;margin-bottom:8px;letter-spacing:-.01em}
+  .alt .alt2{font-family:var(--display);font-size:15px;color:var(--bone-2);margin-bottom:14px;font-weight:300;font-style:italic;opacity:.85}
+  .alt .why{font-size:12.5px;color:var(--muted);line-height:1.55}
+
+  /* ============== RECEIPTS ============== */
+  .receipts{background:rgba(22,22,29,.94);border:1px solid var(--line);padding:36px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .receipts ol{list-style:none;counter-reset:rcpt}
+  .receipts li{counter-increment:rcpt;padding:18px 0;border-bottom:1px solid var(--line);display:grid;grid-template-columns:48px 1fr;gap:18px;align-items:start}
+  .receipts li:last-child{border-bottom:0}
+  .receipts li::before{content:counter(rcpt,decimal-leading-zero);font-family:var(--mono);color:var(--brass);font-size:11px;letter-spacing:.18em;font-weight:600;padding-top:3px}
+  .receipts .quote{font-family:var(--display);font-size:15px;color:var(--bone);font-style:italic;line-height:1.5;margin-bottom:8px}
+  .receipts .meta{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.04em}
+  .receipts .meta a{color:var(--brass-2);text-decoration:none;border-bottom:1px solid var(--line-2);padding-bottom:1px;word-break:break-all}
+  .receipts .meta a:hover{color:var(--bone);border-color:var(--brass-2)}
+  .receipts .meta .when{color:var(--bone-2)}
+
+  /* ============== FOOTER ============== */
+  footer{margin:64px 0 40px;padding:28px;border:1px solid var(--line);background:rgba(22,22,29,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);display:flex;justify-content:space-between;flex-wrap:wrap;gap:20px;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+  footer b{color:var(--bone-2);font-weight:500}
+  footer .meta{text-align:right}
+  footer a{color:var(--brass-2);text-decoration:none}
+
+  /* ============== MOBILE ============== */
+  @media(max-width:980px){
+    .hero{padding:48px 28px 40px}
+    .tldr{grid-template-columns:1fr}
+    .spotlight{grid-template-columns:1fr}
+    .alts{grid-template-columns:1fr 1fr}
+    .events{grid-template-columns:1fr 1fr;gap:14px}
+    .gt-row{grid-template-columns:1.5fr 1fr 0.5fr 2fr}
+  }
+  @media(max-width:680px){
+    body::before{display:none}
+    .wrap{padding:0 18px}
+    header.top{padding:16px 18px;margin-top:16px;flex-direction:column;gap:14px;align-items:flex-start}
+    .doc-id{text-align:left}
+    .hero{padding:36px 22px 32px;margin-top:18px}
+    .hero::before{height:1px}
+    .lede{font-size:15px}
+    h1{font-size:clamp(32px,8vw,46px) !important;line-height:1.05}
+    .tldr-cell{padding:20px}
+    .map-card,.timeline,.receipts,.spot-card{padding:24px 20px}
+    .events{grid-template-columns:1fr}
+    .timeline::before{display:none}
+    .alts{grid-template-columns:1fr}
+    .gt-row{grid-template-columns:1fr;display:flex;flex-direction:column;padding:14px 0}
+    .gt-row > div{border-right:0;border-bottom:1px solid var(--line);padding:8px 18px;width:100%}
+    .gt-row > div:last-child{border-bottom:0}
+    .gt-row.head{display:none}
+    .gt-sku::before{content:"SKU · ";color:var(--faint);font-size:9px;letter-spacing:.2em}
+    .gt-grade{justify-content:flex-start;font-size:36px}
+    .spot-card .sku{font-size:32px}
+    .map-legend{font-size:9.5px;gap:12px}
+    footer{flex-direction:column;padding:20px}
+    footer .meta{text-align:left}
+  }
+
+  /* respect motion preference */
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ============== HEADER ============== -->
+  <header class="top">
+    <div class="mark">
+      <div class="mark-stamp"><span>FB<br>01</span></div>
+      <div class="mark-text">
+        <div class="ent">SOLARPUNK · SOLUTIONS</div>
+        <div class="sub">Inverter field brief · Asheville NC</div>
+      </div>
+    </div>
+    <div class="doc-id">
+      <div>Doc · <b>FB-GSL-01</b></div>
+      <div>Prepared · <b>2026·06·07</b></div>
+      <div class="alarm">Confidential · for Vance</div>
+    </div>
+  </header>
+
+  <!-- ============== HERO ============== -->
+  <section class="hero">
+    <div class="eyebrow"><span class="dot"></span>Field brief <span class="sep">·</span> 实地调查 <span class="sep">·</span> 01 of N</div>
+    <h1>GSL <span class="em">doesn't make</span> these inverters.<span class="cn-sub">晟格锐 · 转售 · 非生产商</span></h1>
+    <p class="lede">A Shenzhen-based <b>battery</b> company resells <em>Deye</em>, <em>Megarevo</em>, and <em>Lux Power</em> inverters under its own sticker. The sales pages don't say so. The forum receipts do. And on <em>November 15, 2024</em> the Deye-platform half of that catalog got <b>remotely bricked</b> across the US, UK, and Pakistan. This brief is the field-level read before Solarpunk Solutions touches a purchase order.</p>
+
+    <div class="tldr">
+      <div class="tldr-cell">
+        <div class="n">01 · OEM Map</div>
+        <div class="h">GSL is a sticker, not a fab.</div>
+        <div class="d">Founder confirmed the 12 kW unit is a <b>Lux Power LXP-LB-US-12k</b> twin on the DIY Solar Forum. Other SKUs ship as <b>Deye</b> or <b>Megarevo</b> hardware — sometimes without disclosure.</div>
+      </div>
+      <div class="tldr-cell">
+        <div class="n">02 · Brick Event</div>
+        <div class="h">Nov 15 2024 · Deye remote-disable.</div>
+        <div class="d">Non-Sol-Ark-branded Deye inverters bricked in US/UK/PK with the message <b>"This inverter is not allowed use at Pakistan/USA/UK."</b> GSL's Deye-platform SKUs are exactly the gray-channel hardware that got hit.</div>
+      </div>
+      <div class="tldr-cell">
+        <div class="n">03 · Support pipe</div>
+        <div class="h">Marketing copy, not infrastructure.</div>
+        <div class="d">Field RMAs route to <b>direct-China email</b> + WeChat/WhatsApp escalation. No NA dealer mesh comparable to EG4 (Signature Solar) or Sol-Ark. One owner paid <b>$600 shipping</b> via the Alibaba supplier.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== SECTION 1 · REBRAND MAP ============== -->
+  <section>
+    <div class="sect-head">
+      <h2>Who actually makes the hardware.</h2>
+      <div class="num"><b>01</b> · OEM topology</div>
+    </div>
+    <p class="sect-intro">Sources are linked in <b>Section 04 · Evidence</b>. The Deye-platform branch is the one currently exposed to remote disable. The Lux Power branch is the one to buy direct.</p>
+
+    <div class="map-card">
+      <svg class="rebrand-map" viewBox="0 0 1180 620" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <defs>
+          <linearGradient id="dangerGrad" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#0a0a0c" stop-opacity="0"/>
+            <stop offset="50%" stop-color="#c84a3e" stop-opacity=".15"/>
+            <stop offset="100%" stop-color="#0a0a0c" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="redglow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6"/>
+          </filter>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+
+        <!-- the lockout blast zone (behind everything else) -->
+        <rect x="40" y="270" width="780" height="140" fill="url(#dangerGrad)" opacity="0.7">
+          <animate attributeName="opacity" values="0.5;0.85;0.5" dur="4s" repeatCount="indefinite"/>
+        </rect>
+        <text x="60" y="298" font-family="JetBrains Mono" font-size="10" letter-spacing="3" fill="#ff3838" font-weight="600">NOV·15·2024 BLAST RADIUS</text>
+
+        <!-- ===== OEM nodes (top row) ===== -->
+        <!-- DEYE (danger) -->
+        <g transform="translate(160,150)">
+          <rect x="-90" y="-44" width="180" height="88" fill="#16161d" stroke="#c84a3e" stroke-width="1.5" filter="url(#redglow)" opacity="0.4"/>
+          <rect x="-90" y="-44" width="180" height="88" fill="#16161d" stroke="#c84a3e" stroke-width="1.5"/>
+          <text x="0" y="-12" text-anchor="middle" font-family="Source Serif 4" font-size="22" font-weight="400" fill="#ece8dd">DEYE</text>
+          <text x="0" y="10" text-anchor="middle" font-family="JetBrains Mono" font-size="10" letter-spacing="2" fill="#c84a3e">SHENZHEN</text>
+          <text x="0" y="28" text-anchor="middle" font-family="JetBrains Mono" font-size="9" letter-spacing="2" fill="#ff3838" font-weight="600">REMOTE-BRICK CAPABLE</text>
+        </g>
+
+        <!-- MEGAREVO (caution) -->
+        <g transform="translate(450,150)">
+          <rect x="-90" y="-44" width="180" height="88" fill="#16161d" stroke="#d6a248" stroke-width="1.5"/>
+          <text x="0" y="-12" text-anchor="middle" font-family="Source Serif 4" font-size="22" font-weight="400" fill="#ece8dd">MEGAREVO</text>
+          <text x="0" y="10" text-anchor="middle" font-family="JetBrains Mono" font-size="10" letter-spacing="2" fill="#d6a248">SHENZHEN</text>
+          <text x="0" y="28" text-anchor="middle" font-family="JetBrains Mono" font-size="9" letter-spacing="2" fill="#d6a248">DISHONEST RELABEL</text>
+        </g>
+
+        <!-- LUX POWER (safe — buy direct) -->
+        <g transform="translate(740,150)">
+          <rect x="-90" y="-44" width="180" height="88" fill="#16161d" stroke="#7aa08e" stroke-width="1.5"/>
+          <text x="0" y="-12" text-anchor="middle" font-family="Source Serif 4" font-size="22" font-weight="400" fill="#ece8dd">LUX POWER</text>
+          <text x="0" y="10" text-anchor="middle" font-family="JetBrains Mono" font-size="10" letter-spacing="2" fill="#7aa08e">JOINT-DEV</text>
+          <text x="0" y="28" text-anchor="middle" font-family="JetBrains Mono" font-size="9" letter-spacing="2" fill="#7aa08e">BUY DIRECT INSTEAD</text>
+        </g>
+
+        <!-- SOL-ARK (protected — at far right, outside the blast zone) -->
+        <g transform="translate(1010,150)">
+          <rect x="-90" y="-44" width="180" height="88" fill="#16161d" stroke="#b89968" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="0" y="-12" text-anchor="middle" font-family="Source Serif 4" font-size="22" font-weight="400" fill="#ece8dd">SOL-ARK</text>
+          <text x="0" y="10" text-anchor="middle" font-family="JetBrains Mono" font-size="10" letter-spacing="2" fill="#b89968">EXCLUSIVE 2018+</text>
+          <text x="0" y="28" text-anchor="middle" font-family="JetBrains Mono" font-size="9" letter-spacing="2" fill="#b89968">PROTECTED CHANNEL</text>
+        </g>
+
+        <!-- ===== Lines down to GSL ===== -->
+        <line x1="160" y1="194" x2="500" y2="430" stroke="#c84a3e" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arr)" color="#c84a3e"/>
+        <line x1="450" y1="194" x2="540" y2="430" stroke="#d6a248" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arr)" color="#d6a248"/>
+        <line x1="740" y1="194" x2="600" y2="430" stroke="#7aa08e" stroke-width="1.5" marker-end="url(#arr)" color="#7aa08e"/>
+
+        <!-- edge labels (SKU groups flowing through each relationship) -->
+        <text x="195" y="248" font-family="JetBrains Mono" font-size="10" fill="#c84a3e" letter-spacing="1.5">→ GES4862 · GES4872 · GES4880</text>
+        <text x="195" y="262" font-family="JetBrains Mono" font-size="10" fill="#c84a3e" letter-spacing="1.5">  GES48100 · TPE48150 · SPI series</text>
+        <text x="430" y="238" font-family="JetBrains Mono" font-size="10" fill="#d6a248" letter-spacing="1.5">→ GES4880 8k variant</text>
+        <text x="430" y="252" font-family="JetBrains Mono" font-size="10" fill="#d6a248" letter-spacing="1.5">  (relabeled w/o disclosure)</text>
+        <text x="660" y="238" font-family="JetBrains Mono" font-size="10" fill="#7aa08e" letter-spacing="1.5">→ GES48120 XP / XP-Plus</text>
+        <text x="660" y="252" font-family="JetBrains Mono" font-size="10" fill="#7aa08e" letter-spacing="1.5">  (= LXP-LB-US-12k)</text>
+
+        <!-- ===== GSL node (center bottom) ===== -->
+        <g transform="translate(570,468)">
+          <rect x="-160" y="-50" width="320" height="100" fill="#0a0a0c" stroke="#ece8dd" stroke-width="2"/>
+          <text x="0" y="-16" text-anchor="middle" font-family="Source Serif 4" font-size="32" font-weight="400" fill="#ece8dd">GSL ENERGY</text>
+          <text x="0" y="6" text-anchor="middle" font-family="Noto Serif SC" font-size="14" fill="#b89968" letter-spacing="3">晟格锐</text>
+          <text x="0" y="30" text-anchor="middle" font-family="JetBrains Mono" font-size="10" letter-spacing="3" fill="#8f8a7e">BATTERY MAKER · INVERTER RESELLER</text>
+        </g>
+
+        <!-- ===== Outflow: GSL → installers ===== -->
+        <path d="M570 568 L570 590" stroke="#b89968" stroke-width="1.5" stroke-dasharray="3 3"/>
+        <text x="580" y="605" font-family="JetBrains Mono" font-size="10" fill="#8f8a7e" letter-spacing="2">to North American installers ↓</text>
+      </svg>
+
+      <div class="map-legend">
+        <span><i style="background:#c84a3e"></i>Deye platform · lockout-exposed</span>
+        <span><i style="background:#d6a248"></i>Megarevo · undisclosed relabel</span>
+        <span><i style="background:#7aa08e"></i>Lux Power · buy direct</span>
+        <span><i style="background:#b89968;border:1px dashed #b89968"></i>Sol-Ark · protected channel</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== SECTION 2 · TIMELINE ============== -->
+  <section>
+    <div class="sect-head">
+      <h2>The lockout, on a timeline.</h2>
+      <div class="num"><b>02</b> · Brick event chronology</div>
+    </div>
+    <p class="sect-intro">The Sol-Ark / Deye <b>"trade war"</b> Vance flagged is real and well-documented. It came to a head on November 15, 2024 when Deye pushed a firmware update that disabled all non-Sol-Ark-branded Deye inverters in three target markets simultaneously.</p>
+
+    <div class="timeline">
+      <div class="events">
+        <div class="ev">
+          <div class="when">2018</div>
+          <div class="what">Sol-Ark · Deye exclusivity</div>
+          <div class="detail">Sol-Ark signs exclusive US distribution with Deye-made hardware. Other importers begin selling Deye-platform clones under house brands (GSL among them).</div>
+        </div>
+        <div class="ev">
+          <div class="when">2018 → 2024</div>
+          <div class="what">Gray-channel growth</div>
+          <div class="detail">Chinese factories ship Deye-derived inverters to the US under GSL, Mango, EG4 (some SKUs), Megarevo, and others. Quality is "fine" while it works; firmware OTA pipe stays with the original OEM.</div>
+        </div>
+        <div class="ev fire">
+          <div class="when">Nov 15 · 2024</div>
+          <div class="what">Remote disable fires</div>
+          <div class="detail">Deye pushes a firmware update. <b>Non-Sol-Ark-branded Deye inverters in US / UK / Pakistan</b> show: <em>"This inverter is not allowed use at Pakistan/USA/UK."</em> Field installers lose customer systems overnight.</div>
+        </div>
+        <div class="ev">
+          <div class="when">Nov 17 · 2024</div>
+          <div class="what">Coverage breaks</div>
+          <div class="detail">Solarboi, Hacker News, and Born City independently document the event. Deye/Sol-Ark blame each other. No path to unbrick.</div>
+        </div>
+        <div class="ev">
+          <div class="when">2025 → now</div>
+          <div class="what">Persistent risk</div>
+          <div class="detail">No public commitment from Deye that this won't happen again. Any gray-channel Deye-platform unit — including the relevant <b>GSL GES &amp; SPI SKUs</b> — remains one firmware push from disable.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== SECTION 3 · GRADE GRID ============== -->
+  <section>
+    <div class="sect-head">
+      <h2>The grid · per-SKU verdict.</h2>
+      <div class="num"><b>03</b> · Field grades</div>
+    </div>
+    <p class="sect-intro">Eleven SKUs from the brochure plus the <b>HS-LV12KNA</b> Vance asked about by name. Grades reflect inferred risk from the underlying OEM platform plus rebrand opacity — direct owner reports only exist in volume for two of these models. <b>Sample-size honesty is in the footer; don't read these as "tested."</b></p>
+
+    <div class="grid-table">
+      <div class="gt-row head">
+        <div>SKU</div><div>OEM platform</div><div style="justify-content:center">Grade</div><div>Reason</div>
+      </div>
+      <div class="gt-row"><div class="gt-sku">SPI2436M120-500</div><div class="gt-oem unknown">likely Megarevo</div><div class="gt-grade I">i</div><div class="gt-reason">24V niche · <b>zero installer reports</b> on EN forums</div></div>
+      <div class="gt-row"><div class="gt-sku">SPI4836M80-300P</div><div class="gt-oem deye">Deye</div><div class="gt-grade I">i</div><div class="gt-reason">Zero reports · lockout-exposed platform</div></div>
+      <div class="gt-row"><div class="gt-sku">SPI4865M150-300P</div><div class="gt-oem deye">Deye</div><div class="gt-grade I">i</div><div class="gt-reason">Zero reports · lockout-exposed platform</div></div>
+      <div class="gt-row"><div class="gt-sku">GES4862M120-500</div><div class="gt-oem deye">Deye</div><div class="gt-grade D">D</div><div class="gt-reason">No reports · <b>Nov 15 2024 exposure</b></div></div>
+      <div class="gt-row"><div class="gt-sku">GES4872M150-300P</div><div class="gt-oem deye">Deye</div><div class="gt-grade I">i</div><div class="gt-reason">Zero reports · lockout-exposed</div></div>
+      <div class="gt-row"><div class="gt-sku">GES4880M160-500P</div><div class="gt-oem megarevo">Deye or Megarevo</div><div class="gt-grade C">C−</div><div class="gt-reason">Megarevo variant: <b>"loud bang, plastic flying out of case"</b> · dead-on-firmware-update · broken zero-export</div></div>
+      <div class="gt-row"><div class="gt-sku">GES48100M250-500P</div><div class="gt-oem deye">Deye</div><div class="gt-grade C">C</div><div class="gt-reason">CSA cert helps permitting · still lockout-exposed</div></div>
+      <div class="gt-row"><div class="gt-sku">GES48120M250-500XP</div><div class="gt-oem lux">Lux Power twin</div><div class="gt-grade B">B−</div><div class="gt-reason">= LXP-LB-US-12k · <b>buy as Lux, not GSL</b> · real US support · documented quirks (PV stop, gen-input bugs, BMS W004)</div></div>
+      <div class="gt-row"><div class="gt-sku">GES48120M250-500XP-Plus</div><div class="gt-oem unknown">unverified</div><div class="gt-grade C">C</div><div class="gt-reason">AFCI · RSD · ISO · SmartLoad on paper · <b>zero independent owner reports</b> · AFCI false-trip risk</div></div>
+      <div class="gt-row"><div class="gt-sku">TPE48150M300-500P (3ϕ)</div><div class="gt-oem unknown">unverified</div><div class="gt-grade I">i</div><div class="gt-reason">Zero NA installer reports · use Sol-Ark 30K-3P for commercial 3ϕ</div></div>
+      <div class="gt-row" style="background:rgba(200,74,62,.04)"><div class="gt-sku">HS-LV12KNA</div><div class="gt-oem unknown">unverified · new</div><div class="gt-grade D">D</div><div class="gt-reason"><b>The one Vance asked about.</b> Brochure-only existence · zero forum threads · no independent UL/CSA cert documentation</div></div>
+    </div>
+  </section>
+
+  <!-- ============== HS-LV12KNA spotlight + manual ============== -->
+  <section>
+    <div class="sect-head">
+      <h2>The model you asked about.</h2>
+      <div class="num">03.5 · Spotlight</div>
+    </div>
+
+    <div class="spotlight">
+      <div class="spot-card warn">
+        <div class="lab">Spotlight · D-grade</div>
+        <div class="sku">HS-LV12KNA</div>
+        <div class="askedby">Asked by · Vance · Jun 7 2026</div>
+        <div class="spot-stats">
+          <div class="spot-stat"><div class="k">Rated</div><div class="v">12 kVA</div></div>
+          <div class="spot-stat"><div class="k">Topology</div><div class="v">Split + 3ϕ</div></div>
+          <div class="spot-stat"><div class="k">Continuous</div><div class="v">190 A</div></div>
+          <div class="spot-stat"><div class="k">AC Passthrough</div><div class="v">200 A</div></div>
+          <div class="spot-stat"><div class="k">MPPT</div><div class="v">2 · 18 kW</div></div>
+          <div class="spot-stat"><div class="k">Warranty</div><div class="v">5 yr</div></div>
+        </div>
+        <div class="verdict">
+          <b>Field verdict · do not be the first</b>
+          <p>Specs read like a Sol-Ark 15K competitor (200 A passthrough is the tell). Zero independent owner reports. No UL / CSA cert documentation surfaced outside GSL's own marketing. OEM platform unconfirmed — possibly new, possibly another Lux twin, no way to know without a teardown. <b>Wait for the second installer to file the first thread.</b></p>
+        </div>
+      </div>
+
+      <div class="spot-card">
+        <div class="lab">The manual · how to get it</div>
+        <div class="sku" style="font-size:30px;line-height:1.15;letter-spacing:-.005em">English datasheet exists on GSL's product page — gated behind a JavaScript trigger.</div>
+        <div class="spot-manual">
+          <div class="ml">Step 01 · product page</div>
+          <div class="mt">Open in browser:</div>
+          <a href="https://www.gsl-energy.com/gsl-energy-hs-lv12kna-hybrid-series-high-performance-inverter.html" target="_blank" rel="noopener">gsl-energy.com/gsl-energy-hs-lv12kna-hybrid-series-high-performance-inverter.html</a>
+        </div>
+        <div class="spot-manual">
+          <div class="ml">Step 02 · grab the PDF</div>
+          <div class="mt">On the page, find the icon labeled <b>"GSL hybrid series HS-LV12KNA split phase inverter"</b>. Click it. If the JS download doesn't fire, right-click → Inspect → copy the URL from the <code style="color:var(--brass);font-family:var(--mono);font-size:11px">onclick=</code> or <code style="color:var(--brass);font-family:var(--mono);font-size:11px">data-href</code> attribute.</div>
+        </div>
+        <div class="spot-manual">
+          <div class="ml">Step 03 · or just ask</div>
+          <div class="mt">Email <a href="mailto:customerservice@gsl-energy.com?subject=HS-LV12KNA English Manual Request">customerservice@gsl-energy.com</a> — they'll send it. Tell them you're an installer evaluating SKUs. Two-day turnaround typical.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== SECTION 4 · ALTERNATIVES ============== -->
+  <section>
+    <div class="sect-head">
+      <h2>What to bring in instead.</h2>
+      <div class="num"><b>04</b> · Capacity-tier alternatives</div>
+    </div>
+    <p class="sect-intro">For each capacity tier in GSL's lineup, there's a cleaner option — real install base, real US dealer mesh, real RMA pipeline. No undisclosed rebrand, no remote-disable exposure.</p>
+
+    <div class="alts">
+      <div class="alt">
+        <div class="tier">3.6 – 6.5 kW · small off-grid</div>
+        <div class="what">Victron MultiPlus-II</div>
+        <div class="alt2">or EG4 6000XP</div>
+        <div class="why">Victron is the premium option — mature firmware, decade-plus install base, every component documented. EG4 6000XP is the budget play with Signature Solar's US support layer.</div>
+      </div>
+      <div class="alt">
+        <div class="tier">8 – 10 kW · split-phase</div>
+        <div class="what">EG4 12000XP</div>
+        <div class="alt2">or Sol-Ark 12K</div>
+        <div class="why">EG4 has Signature Solar's US-stocked parts depot. Sol-Ark has the full dealer mesh. Either gets you AFCI / RSD / split-phase out of the box with documented firmware.</div>
+      </div>
+      <div class="alt">
+        <div class="tier">12 kW · AIO with AFCI/RSD/SmartLoad</div>
+        <div class="what">EG4 18kPV or Sol-Ark 15K</div>
+        <div class="alt2">or Lux LXP-LB-US-12k</div>
+        <div class="why">The Lux is the actual hardware GSL would sell you as the GES48120-XP — same silicon, real US warranty, no rebrand opacity. EG4 / Sol-Ark are the well-trodden paths.</div>
+      </div>
+      <div class="alt">
+        <div class="tier">15 kW · 3-phase commercial</div>
+        <div class="what">Sol-Ark 30K-3P</div>
+        <div class="alt2">or SolarEdge 3ϕ</div>
+        <div class="why">UL1741-SB current. Proven on commercial sites with real demand-charge profiles. Don't gray-channel three-phase commercial — the AHJ will not be friendly to undocumented OEMs.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== SECTION 5 · EVIDENCE ============== -->
+  <section>
+    <div class="sect-head">
+      <h2>The receipts.</h2>
+      <div class="num"><b>05</b> · Evidence · 11 sources</div>
+    </div>
+    <p class="sect-intro">Every grade above traces back to one of these threads or writeups. Dates listed. Read them yourself — the sample sizes are small enough that the receipts are the brief.</p>
+
+    <div class="receipts">
+      <ol>
+        <li>
+          <div>
+            <div class="quote">"GSL is not a manufacturing company but a reseller… inverters sold were actually made by Deye, though some versions were manufactured by other companies like Megarevo."</div>
+            <div class="meta"><span class="when">DIY Solar Forum · 2022–24</span> · <a href="https://diysolarforum.com/threads/gsl-deye-hybrid-inverter.36236/" target="_blank" rel="noopener">gsl-deye-hybrid-inverter.36236</a></div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="quote">"Not honest about their product… if it wasn't their own product they should have said so."</div>
+            <div class="meta"><span class="when">DIY Solar Forum · 2023</span> · <a href="https://diysolarforum.com/threads/gsl-8k-non-deye-installation-help-megarevo.38470/" target="_blank" rel="noopener">gsl-8k-non-deye-installation-help-megarevo.38470</a></div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="quote">Owner thread documenting the 14-page joint-development history of the Lux Power LXP-LB-US-12k and the GSL-H-12KLV-US as the same physical hardware.</div>
+            <div class="meta"><span class="when">DIY Solar Forum · 2023–25</span> · <a href="https://diysolarforum.com/threads/new-lux-power-lxp-lb-us-12k-gsl-h-12klv-us-with-200a-ac-passthrough-current-us-market.44236/" target="_blank" rel="noopener">lxp-lb-us-12k-gsl-h-12klv-us.44236</a></div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="quote">"My Megarevo 8K went boom — loud bang, piece of plastic flying out of the case."</div>
+            <div class="meta"><span class="when">DIY Solar Forum · 2022–23</span> · <a href="https://diysolarforum.com/threads/my-megarevo-8k-went-boom.40422/" target="_blank" rel="noopener">my-megarevo-8k-went-boom.40422</a></div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="quote">Lux 12k PV input randomly stops, requires power-cycle to recover.</div>
+            <div class="meta"><span class="when">DIY Solar Forum · 2023</span> · <a href="https://diysolarforum.com/threads/luxpower-12kw-inverter-problem.75961/" target="_blank" rel="noopener">luxpower-12kw-inverter-problem.75961</a></div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="quote">Lux 12k / 18k generator-input firmware issues — documented over multiple firmware revisions.</div>
+            <div class="meta"><span class="when">DIY Solar Forum · 2024</span> · <a href="https://diysolarforum.com/threads/luxpower-12k-18k-firmware-generator-issues.90338/" target="_blank" rel="noopener">luxpower-12k-18k-firmware-generator-issues.90338</a></div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="quote">"Sol-Ark OEM disables all Deye inverters in the US." — independent writeup of the Nov 15 2024 brick event.</div>
+            <div class="meta"><span class="when">Solarboi · 2024-11-17</span> · <a href="https://solarboi.com/2024/11/17/sol-ark-oem-disables-all-deye-inverters-in-the-us/" target="_blank" rel="noopener">solarboi.com</a></div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="quote">Hacker News thread aggregating reports from US/UK/PK installers seeing the brick message.</div>
+            <div class="meta"><span class="when">HN · 2024-11-17</span> · <a href="https://news.ycombinator.com/item?id=42279010" target="_blank" rel="noopener">news.ycombinator.com/item?id=42279010</a></div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="quote">"Deye deactivates solar inverters in USA, UK and Pakistan."</div>
+            <div class="meta"><span class="when">Born City · 2024-11-28</span> · <a href="https://borncity.com/win/2024/11/28/deye-deactivates-solar-inverters-in-usa-uk-and-pakistan/" target="_blank" rel="noopener">borncity.com</a></div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="quote">Megarevo RxLNA discussion thread — multi-year, includes Megarevo engineer responses on broken zero-export function.</div>
+            <div class="meta"><span class="when">DIY Solar Forum · 2022–24</span> · <a href="https://diysolarforum.com/threads/megarevo-rxlna-discussion.36290/page-41" target="_blank" rel="noopener">megarevo-rxlna-discussion.36290</a></div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <div class="quote">HS-LV12KNA product page — the SKU Vance asked about. Brochure-only existence. PDF gated behind JS download trigger.</div>
+            <div class="meta"><span class="when">GSL Energy · vendor page</span> · <a href="https://www.gsl-energy.com/gsl-energy-hs-lv12kna-hybrid-series-high-performance-inverter.html" target="_blank" rel="noopener">gsl-energy.com/hs-lv12kna</a></div>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <p class="sect-intro" style="margin-top:24px;font-size:13px;color:var(--faint);letter-spacing:.04em;font-style:italic">
+      <b style="color:var(--alarm);font-style:normal">Sample size disclosure ·</b> Total unique GSL-branded threads located: <b>~7</b>. Total model-specific owner reports: <b>~4</b> (8k Megarevo variant) + <b>~30</b> on the 12kLV / Lux twin (which is really a Lux dataset). For 9 of 11 SKUs on Vance's list — including the HS-LV12KNA — installer base on English-language forums is effectively <b>zero</b>. Grades reflect inferred risk from the underlying OEM platform plus rebrand opacity, not direct field validation. Treat them as the field-level read, not lab data.
+    </p>
+  </section>
+
+  <!-- ============== FOOTER ============== -->
+  <footer>
+    <div>
+      <b>Solarpunk Solutions</b><br>
+      Weaverville · Asheville NC<br>
+      <a href="https://solarpunk-asheville.vercel.app" target="_blank" rel="noopener">solarpunk-asheville.vercel.app</a>
+    </div>
+    <div class="meta">
+      <b>Field Brief · FB-GSL-01</b><br>
+      Prepared 2026-06-07<br>
+      For internal evaluation only · sample size disclosed
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
